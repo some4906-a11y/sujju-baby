@@ -231,7 +231,7 @@ footer {
   }
 }
 
-/* Mobile layout: full viewport, preserve canvas aspect ratio */
+/* Mobile fullscreen: stabilize viewport height and preserve canvas ratio */
 @media (max-width: 600px) {
   html,
   body,
@@ -251,13 +251,15 @@ footer {
 
   .page {
     width: 100%;
-    height: 100dvh;
+    height: 100vh;
+    height: 100svh;
     max-width: none;
   }
 
   .game-shell {
     width: 100%;
-    height: 100dvh;
+    height: 100vh;
+    height: 100svh;
     border: 0;
     border-radius: 0;
     box-shadow: none;
@@ -280,25 +282,26 @@ footer {
   }
 
   .stage canvas {
-    width: min(100vw, calc(100dvh * 471 / 570));
+    width: min(100vw, calc(100svh * 471 / 570));
     height: auto;
     max-height: 100%;
     aspect-ratio: 471 / 570;
     object-fit: contain;
     flex: 0 0 auto;
+    touch-action: none;
   }
 
   .overlay {
-    padding: 16px;
+    padding: 12px;
   }
 
   .modal {
     max-width: min(380px, 100%);
-    max-height: calc(100dvh - 32px);
+    max-height: calc(100svh - 24px);
     overflow-y: auto;
   }
 
   .hero-box {
-    height: min(18dvh, 138px);
+    height: min(18svh, 138px);
   }
 }
