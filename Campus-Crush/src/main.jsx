@@ -108,7 +108,7 @@ function App() {
   };
 
   const startMusic = () => {
-    if (!sound) return;
+    if (!uiRef.current.sound) return;
 
     try {
       if (!musicAudioRef.current) {
@@ -142,7 +142,7 @@ function App() {
     setScreen('over');
     stopMusic();
 
-    if (sound) {
+    if (uiRef.current.sound) {
       try {
         if (!gameOverAudioRef.current) {
           gameOverAudioRef.current = new Audio('/audio/gameover.mpeg');
@@ -184,7 +184,7 @@ function App() {
 
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, [sound]);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -238,7 +238,6 @@ function App() {
         return;
       }
 
-      // Fit the entire image inside this box without cropping it.
       const boxWidth = 70;
       const boxHeight = 92;
       const imageRatio = image.naturalWidth / image.naturalHeight;
@@ -270,7 +269,6 @@ function App() {
 
       ctx.clearRect(0, 0, W, H);
 
-      // Sunset sky
       const sky = ctx.createLinearGradient(0, 0, 0, H);
       sky.addColorStop(0, '#07558a');
       sky.addColorStop(0.48, '#f08b68');
@@ -278,7 +276,6 @@ function App() {
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, W, H);
 
-      // Clouds
       for (let i = 0; i < 7; i++) {
         const x = (i * 91 + 30) % W;
         const y = 35 + (i % 3) * 48;
@@ -290,7 +287,6 @@ function App() {
         ctx.fill();
       }
 
-      // Skyline
       ctx.fillStyle = '#173c4b';
       ctx.fillRect(0, 355, W, 120);
 
@@ -312,7 +308,6 @@ function App() {
         }
       }
 
-      // Building on the left
       ctx.fillStyle = '#9c4e2d';
       ctx.fillRect(0, 125, 105, 340);
       ctx.fillStyle = '#f8b66b';
@@ -325,13 +320,11 @@ function App() {
       ctx.fillStyle = '#ffcf85';
       ctx.fillRect(0, 410, 125, 10);
 
-      // Ground
       ctx.fillStyle = '#2a4546';
       ctx.fillRect(0, H - GROUND, W, GROUND);
       ctx.fillStyle = '#ffbb69';
       ctx.fillRect(0, H - GROUND, W, 3);
 
-      // Obstacles
       game.pipes.forEach((pipe) => {
         drawPole(ctx, pipe.x, 0, 42, pipe.top);
         drawPole(
@@ -343,17 +336,14 @@ function App() {
         );
       });
 
-      // Character: entire image shown, no crop.
       ctx.save();
       ctx.translate(game.bird.x, game.bird.y);
       ctx.rotate(
         Math.max(-0.35, Math.min(0.6, game.bird.vy * 0.07))
       );
-
       drawFullCharacter(ctx, assets.current.bird, 0, 0);
       ctx.restore();
 
-      // Game updates
       if (game.started && !game.over) {
         game.frame++;
         game.bird.vy = Math.min(7, game.bird.vy + 0.27);
@@ -419,7 +409,6 @@ function App() {
         });
       }
 
-      // HUD
       ctx.fillStyle = 'white';
       ctx.font = 'bold 16px system-ui';
       ctx.shadowColor = '#14283a';
