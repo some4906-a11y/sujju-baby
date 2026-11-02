@@ -548,7 +548,7 @@ function App() {
                 )}
 
                 <div className="hero-box">
-                  <img src="/assets/game-hero-new.jpg" alt="Hero" />
+                  <img src="/assets/sujann.png" alt="Hero" />
                 </div>
 
                 <div className="stats">
