@@ -24,6 +24,9 @@ function App() {
   const [hero, setHero] = useState(0);
   const [level, setLevel] = useState(1);
 
+  const uiRef = useRef({});
+  uiRef.current = { screen, score, best, level, sound };
+
   const assets = useRef({
     bg: new Image(),
     bird: new Image(),
@@ -77,7 +80,7 @@ function App() {
     gain = 0.04,
     delay = 0
   ) => {
-    if (!sound) return;
+    if (!uiRef.current.sound) return;
 
     try {
       const audio = ensureAudio();
@@ -374,7 +377,7 @@ function App() {
             game.score++;
             setScore(game.score);
 
-            if (game.score > best) {
+            if (game.score > uiRef.current.best) {
               setBest(game.score);
               localStorage.setItem('cc-best', game.score);
             }
@@ -421,15 +424,15 @@ function App() {
       ctx.font = 'bold 16px system-ui';
       ctx.shadowColor = '#14283a';
       ctx.shadowBlur = 4;
-      ctx.fillText(`Level ${level}`, 18, 30);
+      ctx.fillText(`Level ${uiRef.current.level}`, 18, 30);
 
       ctx.font = 'bold 48px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText(score, W / 2, 78);
+      ctx.fillText(uiRef.current.score, W / 2, 78);
       ctx.textAlign = 'left';
       ctx.shadowBlur = 0;
 
-      if (screen === 'ready') {
+      if (uiRef.current.screen === 'ready') {
         ctx.fillStyle = '#0c2038aa';
         ctx.fillRect(30, 215, W - 60, 110);
 
@@ -449,7 +452,7 @@ function App() {
     draw();
 
     return () => cancelAnimationFrame(raf.current);
-  }, [screen, sound, level, score, best]);
+  }, []);
 
   return (
     <main className="page">
