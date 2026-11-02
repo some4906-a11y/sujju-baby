@@ -144,25 +144,41 @@ function App() {
     }
   };
 
+  // Called only when the player clicks "Play Again".
+  // It resets the game and starts a 3-second countdown.
   const restartGame = () => {
     if (restartTimerRef.current) {
       clearInterval(restartTimerRef.current);
       restartTimerRef.current = null;
     }
 
-    setRestartCountdown(0);
+    stopMusic();
     init();
+    setRestartCountdown(3);
+    setScreen('countdown');
 
-    requestAnimationFrame(() => {
-      const game = gameRef.current;
-      if (!game) return;
+    let remaining = 3;
 
-      game.started = true;
-      setScreen('playing');
-      startMusic();
-      game.bird.vy = -5.3;
-      tone(640, 0.07, 'square', 0.025);
-    });
+    restartTimerRef.current = setInterval(() => {
+      remaining -= 1;
+      setRestartCountdown(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(restartTimerRef.current);
+        restartTimerRef.current = null;
+
+        const game = gameRef.current;
+        if (!game) return;
+
+        game.started = true;
+        game.over = false;
+        game.bird.vy = -5.3;
+
+        setScreen('playing');
+        startMusic();
+        tone(640, 0.07, 'square', 0.025);
+      }
+    }, 1000);
   };
 
   const lose = () => {
@@ -185,33 +201,20 @@ function App() {
         gameOverAudioRef.current.play().catch(() => {});
       } catch {}
     }
-
-    if (restartTimerRef.current) {
-      clearInterval(restartTimerRef.current);
-    }
-
-    setRestartCountdown(6);
-
-    restartTimerRef.current = setInterval(() => {
-      setRestartCountdown((previous) => {
-        if (previous <= 1) {
-          clearInterval(restartTimerRef.current);
-          restartTimerRef.current = null;
-          restartGame();
-          return 0;
-        }
-
-        return previous - 1;
-      });
-    }, 1000);
   };
 
   const flap = () => {
     const game = gameRef.current;
     if (!game) return;
 
-    // Ignore input while the game-over countdown is active.
-    if (game.over || uiRef.current.screen === 'over') return;
+    // Ignore input while Game Over or countdown is active.
+    if (
+      game.over ||
+      uiRef.current.screen === 'over' ||
+      uiRef.current.screen === 'countdown'
+    ) {
+      return;
+    }
 
     if (!game.started) {
       game.started = true;
@@ -527,16 +530,22 @@ function App() {
             onPointerDown={flap}
           />
 
-          {screen === 'over' && (
+          {(screen === 'over' || screen === 'countdown') && (
             <div className="overlay">
               <div className="modal">
-                <h1>Scene cut!</h1>
-                <h3>చిన్న బ్రేక్. మరి ఫ్లై!</h3>
-                <p>
-                  You reached the ground.
-                  <br />
-                  Restarting in {restartCountdown} seconds...
-                </p>
+                {screen === 'over' ? (
+                  <>
+                    <h1>Scene cut!</h1>
+                    <h3>చిన్న బ్రేక్. మరి ఫ్లై!</h3>
+                    <p>You reached the ground.</p>
+                  </>
+                ) : (
+                  <>
+                    <h1>Get Ready!</h1>
+                    <h3>{restartCountdown > 0 ? restartCountdown : 'Go!'}</h3>
+                    <p>Starting in {restartCountdown}...</p>
+                  </>
+                )}
 
                 <div className="hero-box">
                   <img src="/assets/game-hero-new.jpg" alt="Hero" />
@@ -553,9 +562,11 @@ function App() {
                   </div>
                 </div>
 
-                <button className="play" onClick={restartGame}>
-                  Restart Now
-                </button>
+                {screen === 'over' && (
+                  <button className="play" onClick={restartGame}>
+                    Play Again
+                  </button>
+                )}
 
                 <button
                   className="switch"
