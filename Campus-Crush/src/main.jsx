@@ -155,7 +155,6 @@ function App() {
 
     requestAnimationFrame(() => {
       const game = gameRef.current;
-
       if (!game) return;
 
       game.started = true;
@@ -198,7 +197,6 @@ function App() {
         if (previous <= 1) {
           clearInterval(restartTimerRef.current);
           restartTimerRef.current = null;
-
           restartGame();
           return 0;
         }
@@ -212,10 +210,8 @@ function App() {
     const game = gameRef.current;
     if (!game) return;
 
-    if (game.over) {
-      restartGame();
-      return;
-    }
+    // Ignore input while the game-over countdown is active.
+    if (game.over || uiRef.current.screen === 'over') return;
 
     if (!game.started) {
       game.started = true;
