@@ -38,7 +38,7 @@ function App() {
   useEffect(() => {
     assets.current.bg.src = '/assets/gameplay-reference.png';
     assets.current.bird.src = '/assets/sujanangry.png';
-    assets.current.hero.src = '/assets/sujjunn.jpeg';
+    assets.current.hero.src = '/assets/sujann.png';
   }, []);
 
   const init = () => {
