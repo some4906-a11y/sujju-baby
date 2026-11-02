@@ -14,6 +14,7 @@ function App() {
   const musicRef = useRef(null);
   const musicAudioRef = useRef(null);
   const gameOverAudioRef = useRef(null);
+  const restartTimerRef = useRef(null);
 
   const [screen, setScreen] = useState('ready');
   const [score, setScore] = useState(0);
@@ -23,6 +24,7 @@ function App() {
   const [sound, setSound] = useState(true);
   const [hero, setHero] = useState(0);
   const [level, setLevel] = useState(1);
+  const [restartCountdown, setRestartCountdown] = useState(0);
 
   const uiRef = useRef({});
   uiRef.current = { screen, score, best, level, sound };
@@ -57,6 +59,15 @@ function App() {
 
   useEffect(() => {
     init();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (restartTimerRef.current) {
+        clearInterval(restartTimerRef.current);
+        restartTimerRef.current = null;
+      }
+    };
   }, []);
 
   const ensureAudio = () => {
@@ -133,6 +144,28 @@ function App() {
     }
   };
 
+  const restartGame = () => {
+    if (restartTimerRef.current) {
+      clearInterval(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+
+    setRestartCountdown(0);
+    init();
+
+    requestAnimationFrame(() => {
+      const game = gameRef.current;
+
+      if (!game) return;
+
+      game.started = true;
+      setScreen('playing');
+      startMusic();
+      game.bird.vy = -5.3;
+      tone(640, 0.07, 'square', 0.025);
+    });
+  };
+
   const lose = () => {
     const game = gameRef.current;
 
@@ -153,6 +186,26 @@ function App() {
         gameOverAudioRef.current.play().catch(() => {});
       } catch {}
     }
+
+    if (restartTimerRef.current) {
+      clearInterval(restartTimerRef.current);
+    }
+
+    setRestartCountdown(6);
+
+    restartTimerRef.current = setInterval(() => {
+      setRestartCountdown((previous) => {
+        if (previous <= 1) {
+          clearInterval(restartTimerRef.current);
+          restartTimerRef.current = null;
+
+          restartGame();
+          return 0;
+        }
+
+        return previous - 1;
+      });
+    }, 1000);
   };
 
   const flap = () => {
@@ -160,7 +213,7 @@ function App() {
     if (!game) return;
 
     if (game.over) {
-      init();
+      restartGame();
       return;
     }
 
@@ -483,7 +536,11 @@ function App() {
               <div className="modal">
                 <h1>Scene cut!</h1>
                 <h3>చిన్న బ్రేక్. మరి ఫ్లై!</h3>
-                <p>You reached the ground.</p>
+                <p>
+                  You reached the ground.
+                  <br />
+                  Restarting in {restartCountdown} seconds...
+                </p>
 
                 <div className="hero-box">
                   <img src="/assets/game-hero-new.jpg" alt="Hero" />
@@ -500,14 +557,8 @@ function App() {
                   </div>
                 </div>
 
-                <button
-                  className="play"
-                  onClick={() => {
-                    init();
-                    requestAnimationFrame(() => flap());
-                  }}
-                >
-                  Play again
+                <button className="play" onClick={restartGame}>
+                  Restart Now
                 </button>
 
                 <button
